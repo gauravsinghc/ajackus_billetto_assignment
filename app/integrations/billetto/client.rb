@@ -34,7 +34,23 @@ module Billetto
         raise Errors::InvalidResponseError, "Billetto API response must contain a data array"
       end
 
-      payload.fetch("data")
+      payload.fetch("data").map do |event_hash|
+        Billetto::EventData.new(
+          billetto_event_id: event_hash["id"].to_s,
+          title:             event_hash["title"],
+          description:       event_hash["description"],
+          url:               event_hash["url"] || event_hash["public_url"],
+          image_link:        event_hash["image_link"],
+          state:             event_hash["state"],
+          start_at:          event_hash["startdate"],
+          end_at:            event_hash["enddate"],
+          location:          event_hash["location"],
+          minimum_price:     event_hash["minimum_price"],
+          categorisation:    event_hash["categorisation"] || event_hash["categorization"],
+          event_type:        event_hash["type"],
+          localized_type:    event_hash["localized_type"]
+        )
+      end
     rescue JSON::ParserError, TypeError => error
       raise Errors::InvalidResponseError, "Billetto API returned invalid JSON", cause: error
     rescue Faraday::TimeoutError => error
