@@ -14,8 +14,8 @@ RSpec.describe Billetto::Client do
   end
 
   describe "#public_events" do
-    it "sends the API keypair and bounded limit, then returns the data array" do
-      events = [{ "id" => "event-123", "title" => "A test event" }]
+    it "sends the API keypair and bounded limit, then returns the mapped data structs" do
+      events = [{ "id" => "event-123", "title" => "A test event", "state" => "published" }]
 
       stubs.get("/api/v3/public/events?limit=100") do |request|
         expect(request.request_headers["Api-Keypair"]).to eq("test-keypair")
@@ -23,7 +23,12 @@ RSpec.describe Billetto::Client do
         [200, { "Content-Type" => "application/json" }, JSON.generate("data" => events)]
       end
 
-      expect(client.public_events).to eq(events)
+      result = client.public_events
+      expect(result).to be_an(Array)
+      expect(result.first).to be_a(Billetto::EventData)
+      expect(result.first.billetto_event_id).to eq("event-123")
+      expect(result.first.title).to eq("A test event")
+      expect(result.first.state).to eq("published")
     end
 
     it "allows a caller to request a smaller bounded result" do
