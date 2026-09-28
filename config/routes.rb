@@ -14,7 +14,9 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   root "events#index"
-  resources :events, only: [:index]
+  resources :events, only: [:index] do
+    resource :vote, only: [:create, :destroy]
+  end
   get "logout", to: "sessions#destroy"
 
 end
