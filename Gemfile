@@ -25,6 +25,9 @@ gem "sidekiq", "~> 8.1"
 gem "sidekiq-cron"
 gem "stoplight", "~> 5.8.3"
 gem "pagy"
+gem "clerk-sdk-ruby", require: "clerk"
+gem "pry"
+
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"

@@ -2,7 +2,15 @@
   <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
     <h1>Billetto Events</h1>
     <div>
-      <span style="color: #666; font-style: italic;">Login / Signup </span>
+      <% if current_user.present? %>
+        <span style="font-weight: bold; margin-right: 15px; color: #2c3e50;">
+          Welcome, <%= current_user[:name] %>!
+        </span>
+        <%= link_to "Logout", logout_path, data: { turbo_prefetch: false }, style: "padding: 8px 16px; background: #e74c3c; color: white; border-radius: 4px; text-decoration: none; font-weight: bold;" %>
+      <% else %>
+        <%= link_to "Login", clerk.sign_in_url, style: "padding: 8px 16px; background: #2c3e50; color: white; border-radius: 4px; text-decoration: none; font-weight: bold; margin-right: 10px;" %>
+        <%= link_to "Signup", clerk.sign_up_url, style: "padding: 8px 16px; background: #27ae60; color: white; border-radius: 4px; text-decoration: none; font-weight: bold;" %>
+      <% end %>
     </div>
   </header>
 
