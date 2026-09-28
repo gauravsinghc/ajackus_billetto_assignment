@@ -15,4 +15,6 @@ Rails.application.routes.draw do
   # root "posts#index"
   root "events#index"
   resources :events, only: [:index]
+  get "logout", to: "sessions#destroy"
+
 end
