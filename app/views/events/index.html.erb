@@ -1,0 +1,43 @@
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+  <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
+    <h1>Billetto Events</h1>
+    <div>
+      <span style="color: #666; font-style: italic;">Login / Signup </span>
+    </div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+    <% @events.each do |event| %>
+      <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <% if event.image_link.present? %>
+          <img src="<%= event.image_link %>" alt="<%= event.title %>" style="width: 100%; height: 200px; object-fit: cover;">
+        <% else %>
+          <div style="width: 100%; height: 200px; background-color: #eee; display: flex; align-items: center; justify-content: center; color: #999;">
+            No Image
+          </div>
+        <% end %>
+        <div style="padding: 15px;">
+          <h2 style="margin: 0 0 10px 0; font-size: 1.25rem;"><%= event.title %></h2>
+          <p style="color: #666; font-size: 0.9rem; margin: 0 0 15px 0;">
+            <%= event.start_at&.strftime("%B %d, %Y at %I:%M %p") %><br>
+            <% loc = event.location || {} %>
+            <% loc_string = [loc["location_name"], loc["address_line"], loc["city"], loc["country"]].reject(&:blank?).join(", ") %>
+            <%= loc_string.presence || "TBA" %>
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <span style="font-weight: bold; color: #2c3e50;">
+              <% price_hash = event.minimum_price || {} %>
+              <% amount = price_hash["amount"] || (price_hash["amount_in_cents"].to_f / 100) %>
+              <%= amount.to_i > 0 ? "From #{amount.to_i} #{price_hash['currency'] || 'DKK'}" : "Free" %>
+            </span>
+            <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; color: #666;">
+              0 Votes
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+   <%== @pagy.series_nav %>
+</div>
