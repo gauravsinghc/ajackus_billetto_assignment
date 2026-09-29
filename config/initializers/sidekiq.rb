@@ -12,7 +12,7 @@ end
 if Sidekiq.server?
   Sidekiq::Cron::Job.create(
     name: 'Billetto Ingestion - Every night at midnight',
-    cron: '0 0 * * *', # Standard cron syntax for "00:00" (midnight)
+    cron: '0 0 * * *',
     class: 'BillettoIngestionJob'
   )
 end

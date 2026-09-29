@@ -15,7 +15,6 @@ module Events
     def import_event(event_data)
       event = Event.find_or_initialize_by(billetto_event_id: event_data.billetto_event_id)
 
-      # Assign all other attributes directly from the DTO
       event.assign_attributes(event_data.to_h.except(:billetto_event_id))
 
       if event.changed?

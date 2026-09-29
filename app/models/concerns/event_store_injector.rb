@@ -11,10 +11,8 @@ module EventStoreInjector
         main_stream = event.stream_names.first
         linked_streams = event.stream_names.drop(1)
         
-        # Publish to main stream with all original kwargs (expected_version, etc)
         @client.publish(event, stream_name: main_stream, **kwargs)
         
-        # Link the already-published event to the additional streams
         linked_streams.each do |stream|
           @client.link(event.event_id, stream_name: stream)
         end
