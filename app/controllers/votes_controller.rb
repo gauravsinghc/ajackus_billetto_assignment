@@ -1,10 +1,10 @@
 class VotesController < ApplicationController
-  before_action :require_user! # Assumes basic auth check is present, but skip if not required
+  before_action :require_user!
 
   def create
     command = Voting::Commands::CastVote.new(
       event_id: params[:event_id],
-      user_id: current_user.id,
+      user_id: current_user[:id],
       vote_type: params[:vote_type]
     )
     command_bus.call(command)
@@ -17,7 +17,7 @@ class VotesController < ApplicationController
   def destroy
     command = Voting::Commands::RemoveVote.new(
       event_id: params[:event_id],
-      user_id: current_user.id
+      user_id: current_user[:id]
     )
     command_bus.call(command)
 
@@ -28,7 +28,6 @@ class VotesController < ApplicationController
 
   private
 
-  # Polyfill for basic test compatibility since clerk auth might be skipped
   def require_user!
     redirect_to events_path, alert: "Must be logged in" unless current_user
   end

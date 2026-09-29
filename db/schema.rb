@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_114327) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_29_111002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_114327) do
     t.index ["stream", "position"], name: "index_event_store_events_in_streams_on_stream_and_position", unique: true
   end
 
+  create_table "event_vote_counts", primary_key: "event_id", id: :string, force: :cascade do |t|
+    t.integer "upvotes", default: 0, null: false
+    t.integer "downvotes", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "events", force: :cascade do |t|
     t.string "billetto_event_id"
     t.string "title"
@@ -58,6 +65,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_114327) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["billetto_event_id"], name: "index_events_on_billetto_event_id", unique: true
+  end
+
+  create_table "projected_events", primary_key: "event_uuid", id: :uuid, default: nil, force: :cascade do |t|
+    t.datetime "created_at", null: false
   end
 
   create_table "voting_votes", force: :cascade do |t|

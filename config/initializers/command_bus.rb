@@ -8,7 +8,6 @@ class SimpleCommandBus
   end
 
   def call(command)
-    # Generate a unique ID for this command execution
     execution_id = SecureRandom.uuid
 
     ApplicationRecord.transaction do
