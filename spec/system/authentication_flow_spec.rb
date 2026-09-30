@@ -16,7 +16,7 @@ RSpec.describe "Authentication Flow", type: :system, js: true do
     visit root_path
     expect(page).to have_content("Welcome, Capybara Tester!")
     
-    click_link "Logout"
+    click_button "Logout"
     
     expect(page).not_to have_content("Welcome, Capybara Tester!")
     expect(page).to have_link("Login")

@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe SimpleCommandBus do
   before do
     allow(Event).to receive(:exists?).and_return(true)
-  en
+  end
   let(:bus) { Rails.configuration.command_bus }
   let(:event_store) { Rails.configuration.event_store }
 

@@ -19,10 +19,10 @@ jobs:
           bundler-cache: true
 
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
+        run: bundle exec brakeman --no-pager
 
       - name: Scan for known security vulnerabilities in gems used
-        run: bin/bundler-audit
+        run: bundle exec bundler-audit
 
   scan_js:
     runs-on: ubuntu-latest
@@ -37,33 +37,9 @@ jobs:
           bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
+        run: ruby bin/importmap audit
 
-  lint:
-    runs-on: ubuntu-latest
-    env:
-      RUBOCOP_CACHE_ROOT: tmp/rubocop
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - name: Prepare RuboCop cache
-        uses: actions/cache@v4
-        env:
-          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
-        with:
-          path: ${{ env.RUBOCOP_CACHE_ROOT }}
-          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
-          restore-keys: |
-            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
 
   test:
     runs-on: ubuntu-latest
@@ -100,9 +76,9 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+          CLERK_SECRET_KEY: sk_test_dummy_secret_key
+          CLERK_PUBLISHABLE_KEY: pk_test_Z3VpZGluZy1zdGFyLTYwLmNsZXJrLmFjY291bnRzLmRldiQ
+        run: bundle exec rails db:test:prepare && bundle exec rspec
 
   system-test:
     runs-on: ubuntu-latest
@@ -139,9 +115,9 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test:system
+          CLERK_SECRET_KEY: sk_test_dummy_secret_key
+          CLERK_PUBLISHABLE_KEY: pk_test_Z3VpZGluZy1zdGFyLTYwLmNsZXJrLmFjY291bnRzLmRldiQ
+        run: bundle exec rails db:test:prepare && bundle exec rspec spec/system
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4

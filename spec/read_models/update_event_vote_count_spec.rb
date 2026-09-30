@@ -128,16 +128,16 @@ RSpec.describe ReadModels::UpdateEventVoteCount, type: :job do
 
   describe "Failure and retry" do
     it "rolls back projected_events if counter update fails, allowing retry" do
-      event = publish_event(Voting::Events::VoteCast, vote_type: "upvote")
-      
-      # Mock the DB connection to fail during the UPSERT
+      # Mock the DB connection to fail during the UPSERT BEFORE publishing
       allow(ApplicationRecord.connection).to receive(:execute).and_call_original
       allow(ApplicationRecord.connection).to receive(:execute)
-        .with(/INSERT INTO event_vote_counts/, any_args)
+        .with(match(/INSERT INTO event_vote_counts/), any_args)
         .and_raise(StandardError, "DB failure")
         
+      event = Voting::Events::VoteCast.new(data: { event_id: event_id, user_id: user_id, vote_type: "upvote" })
+      
       expect {
-        described_class.new.call(event)
+        event_store.publish(event, stream_name: stream_name)
       }.to raise_error(StandardError, "DB failure")
       
       # Verify transaction rolled back the deduplication marker
