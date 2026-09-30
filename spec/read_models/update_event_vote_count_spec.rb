@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe ReadModels::UpdateEventVoteCount, type: :job do
   let(:event_store) { Rails.configuration.event_store }
-  let(:event_id) { "E123" }
-  let(:user_id) { "U456" }
+  let(:event_id) { "E#{SecureRandom.hex(4)}" }
+  let(:user_id) { "U#{SecureRandom.hex(4)}" }
   let(:stream_name) { "Vote$#{event_id}-#{user_id}" }
 
   before do
@@ -133,7 +133,7 @@ RSpec.describe ReadModels::UpdateEventVoteCount, type: :job do
       # Mock the DB connection to fail during the UPSERT
       allow(ApplicationRecord.connection).to receive(:execute).and_call_original
       allow(ApplicationRecord.connection).to receive(:execute)
-        .with(/INSERT INTO event_vote_counts/)
+        .with(/INSERT INTO event_vote_counts/, any_args)
         .and_raise(StandardError, "DB failure")
         
       expect {

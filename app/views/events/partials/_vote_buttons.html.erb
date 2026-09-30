@@ -1,0 +1,14 @@
+<div style="display: flex; gap: 5px;">
+  <% if active_vote == "upvote" %>
+    <%= button_to "Upvoted", event_vote_path(event_id: event.billetto_event_id), method: :delete, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #27ae60; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-weight: bold;", onclick: "this.disabled=true; this.form.submit();" %>
+    <%= button_to "Downvote", event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "downvote" }, method: :post, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #eee; color: #666; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer;", onclick: "this.disabled=true; this.form.submit();" %>
+  
+  <% elsif active_vote == "downvote" %>
+    <%= button_to "Upvote", event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "upvote" }, method: :post, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #eee; color: #666; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer;", onclick: "this.disabled=true; this.form.submit();" %>
+    <%= button_to "Downvoted", event_vote_path(event_id: event.billetto_event_id), method: :delete, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-weight: bold;", onclick: "this.disabled=true; this.form.submit();" %>
+  
+  <% else %>
+    <%= button_to "Upvote", event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "upvote" }, method: :post, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #eee; color: #666; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer;", onclick: "this.disabled=true; this.form.submit();" %>
+    <%= button_to "Downvote", event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "downvote" }, method: :post, data: { turbo: false }, form_style: "display: inline;", style: "padding: 5px 10px; background: #eee; color: #666; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer;", onclick: "this.disabled=true; this.form.submit();" %>
+  <% end %>
+</div>

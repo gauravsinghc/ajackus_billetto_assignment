@@ -8,6 +8,13 @@ module Voting
       attribute :vote_type, :string
       validates :event_id, :user_id, :vote_type, presence: true
       validates :vote_type, inclusion: { in: %w[upvote downvote] }
+      validate :event_must_exist
+
+      private
+
+      def event_must_exist
+        errors.add(:event_id, "must belong to a real event") unless Event.exists?(billetto_event_id: event_id)
+      end
     end
   end
 end
