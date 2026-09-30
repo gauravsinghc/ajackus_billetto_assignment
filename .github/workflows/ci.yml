@@ -76,7 +76,8 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          CLERK_SECRET_KEY: dummy_test_secret_key
+          CLERK_SECRET_KEY: sk_test_dummy_secret_key
+          CLERK_PUBLISHABLE_KEY: pk_test_dummy_publishable_key
         run: bundle exec rails db:test:prepare && bundle exec rspec
 
   system-test:
@@ -115,6 +116,7 @@ jobs:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
           CLERK_SECRET_KEY: sk_test_dummy_secret_key
+          CLERK_PUBLISHABLE_KEY: pk_test_dummy_publishable_key
         run: bundle exec rails db:test:prepare && bundle exec rspec spec/system
 
       - name: Keep screenshots from failed system tests
