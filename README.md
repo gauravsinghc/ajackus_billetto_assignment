@@ -134,3 +134,49 @@ Built the `UpdateEventVoteCount` projector. It listens to the Event Store and at
 
 **Phases 11-12: Testing & Hardening**
 Solidified the application with comprehensive RSpec coverage spanning API clients, circuit breakers, idempotency, Command Bus routing, CQRS projectors, and UI request integration tests.
+
+---
+
+## 📝 Reviewer Feedback Resolutions
+
+Below are the items requested during the initial review, along with the exact solutions implemented to address them:
+
+### Required (needed to complete the assignment)
+
+**1. Add browser tests. Cover the sign-up, login and logout flow, and voting through the actual page, confirming the vote count changes. Stubbing the Clerk session in tests is fine, as long as the test clicks through the real pages and buttons.**
+- **Resolution**: Configured Capybara and Cuprite to support real browser testing. Added a comprehensive system test suite (`smoke_test_spec.rb`) that executes the full sign-up, login, voting, and logout flows directly through the UI. Clerk authentication was mocked deterministically via cookies to allow stable, headless execution in CI.
+
+**2. Add authentication tests. Show that a logged-out user who tries to vote (both casting and removing a vote) is refused, and that no vote is saved or recorded in the event store.**
+- **Resolution**: Added strict request specs (`spec/requests/votes_spec.rb`). These explicitly verify that unauthenticated POST and DELETE requests to the voting endpoints return redirects, and snapshot the exact Event Store stream to prove that no unauthorized events are ever recorded.
+
+**3. Show the event description on the listing page. The assignment asks for title, date, image and a brief description. A shortened version of the description is enough.**
+- **Resolution**: Updated `app/views/events/index.html.erb` to display a truncated version of the event description alongside the existing title, date, and image on the frontend grid.
+
+**4. Fix the setup instructions. The README says to set CLERK_API_KEY, but the app reads CLERK_SECRET_KEY and will not start without it. Add a way to run the first event import on a fresh install, such as a rake task or a one-line command. At the moment, the page stays empty until the nightly job runs at midnight.**
+- **Resolution**: Corrected the environment variable documentation in the Local Setup section of this README to require `CLERK_SECRET_KEY`. Additionally, added a custom rake task (`bundle exec rails billetto:import`) which invokes the background job synchronously, allowing fresh installs to instantly populate the database.
+
+### Recommended (not required, but strengthens the submission)
+
+**5. Protect the /sidekiq dashboard with a login, or limit it to development. Right now anyone can view and manage jobs.**
+- **Resolution**: Created a custom Rack routing constraint (`ClerkSidekiqConstraint`) which intercepts the Sidekiq web mount in `routes.rb` and strictly verifies the presence of a valid Clerk session, preventing unauthenticated access to the dashboard.
+
+**6. Check that the event exists before accepting a vote, so made-up event IDs are rejected.**
+- **Resolution**: Moved event existence validation out of the CQRS Command objects (to keep them pure) and into the `Voting::Service` handler. The service now explicitly checks the Read Model and raises a custom `Voting::EventNotFoundError` for fabricated IDs, which the controller safely catches and handles.
+
+**7. Handle a rapid double-click gracefully. The database correctly blocks the duplicate, but the user currently sees an error page.**
+- **Resolution**: Implemented end-to-end idempotency. The frontend now safely disables buttons upon click using `this.disabled=true`. On the backend, we replaced the generic rescue of `ActiveRecord::RecordNotUnique` with a strict bounded retry in the domain service. If two identical requests (e.g., two upvotes) arrive concurrently, the retry safely ignores the duplicate idempotently. If two opposing requests (upvote and downvote) arrive concurrently, the retry successfully updates the state without silently dropping the user's final intent.
+
+**8. Log any events skipped during import because they failed validation, so nothing is dropped silently.**
+- **Resolution**: Updated `app/domain/events/importer.rb` to actively inspect the return value of `.save` and execute `Rails.logger.warn` to log the complete validation error payload whenever an event is dropped during ingestion.
+
+**9. Update the CI workflow to run your RSpec suite. The default workflow runs Minitest commands and will not execute your tests.**
+- **Resolution**: Completely updated `.github/workflows/ci.yml` to execute `bundle exec rspec` for both unit and system tests. Securely injected dummy Clerk environment variables into the test runner to prevent unhandled authorization crashes during the build.
+
+**10. Import more than the first 100 events, or explain in the README why 100 is sufficient.**
+- **Resolution**: The Billetto `GET /public/events` endpoint restricts responses to a maximum `limit` of 100 and completely lacks documented continuation mechanisms (page, offset, cursors, etc.). Therefore, a bounded request of `limit=100` is the maximum safe scope for this assignment. In a true production architecture, rather than paginating the public API, we would use a nightly cronjob (as implemented now) paired with webhooks. We would utilize Billetto's webhook functionality, which provides real-time event updates (created, updated, published, deleted, etc.) to keep the local database synchronized.
+
+**11. Change logout from a plain link to a button that uses a DELETE request.**
+- **Resolution**: Updated the router to map the logout path to a `DELETE` request, and replaced the `link_to` in the application header with a `button_to` form submission, resolving the security vulnerability of GET-based logouts.
+
+**12. Correct the test comments that do not match what the test does. For example, the concurrency test refers to a skip_transaction setting that nothing in the project reads.**
+- **Resolution**: Removed the stale `skip_transaction: true` metadata tag and rewrote the concurrency test. The test now uses a native Ruby `Queue` latch to synchronize threads perfectly, guaranteeing precise parallel execution to genuinely stress-test the PostgreSQL unique constraints.

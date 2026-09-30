@@ -12,12 +12,16 @@ RSpec.describe Voting::Vote, type: :model do
     end
 
     it "prevents race conditions via true threaded concurrency" do
-      
+      ready_queue = Queue.new
+      go_queue = Queue.new
       threads = []
       
       # We'll try to insert 5 simultaneous requests for the same user/event
       5.times do |i|
         threads << Thread.new do
+          ready_queue.push(true) # signal ready
+          go_queue.pop           # block until go signal
+          
           begin
             # Use raw connection if needed, but ActiveRecord handles connection pooling
             Voting::Vote.create(event_id: "E99", user_id: "U99", vote_type: "upvote")
@@ -26,6 +30,11 @@ RSpec.describe Voting::Vote, type: :model do
           end
         end
       end
+      
+      # Wait for all threads to reach the latch
+      5.times { ready_queue.pop }
+      # Release the hounds simultaneously
+      5.times { go_queue.push(true) }
       
       threads.each(&:join)
       

@@ -57,6 +57,47 @@ RSpec.describe Voting::Service do
     end
   end
 
+  describe "event existence validation" do
+    it "rejects cast_vote when event does not exist" do
+      allow(Event).to receive(:exists?).with(billetto_event_id: "fake_id").and_return(false)
+      cmd = Voting::Commands::CastVote.new(event_id: "fake_id", user_id: "U1", vote_type: "upvote")
+      expect { service.cast_vote(cmd) }.to raise_error(Voting::EventNotFoundError)
+    end
+
+    it "rejects remove_vote when event does not exist" do
+      allow(Event).to receive(:exists?).with(billetto_event_id: "fake_id").and_return(false)
+      cmd = Voting::Commands::RemoveVote.new(event_id: "fake_id", user_id: "U1")
+      expect { service.remove_vote(cmd) }.to raise_error(Voting::EventNotFoundError)
+    end
+  end
+
+  describe "concurrent vote retry logic" do
+    it "retries once on ActiveRecord::RecordNotUnique and updates the vote if intent differs" do
+      cmd = Voting::Commands::CastVote.new(event_id: "E1", user_id: "U1", vote_type: "downvote")
+      
+      call_count = 0
+      original_find = Voting::Vote.method(:find_or_initialize_by)
+      
+      allow(Voting::Vote).to receive(:find_or_initialize_by) do |args|
+        if call_count == 0
+          call_count += 1
+          # First pass: simulate new record but cast! hits unique constraint
+          vote = Voting::Vote.new(args)
+          allow(vote).to receive(:cast!).and_raise(ActiveRecord::RecordNotUnique)
+          vote
+        else
+          # Retry pass: simulate concurrent thread already inserted an upvote
+          Voting::Vote.create!(event_id: "E1", user_id: "U1", vote_type: "upvote")
+          original_find.call(args)
+        end
+      end
+      
+      service.cast_vote(cmd)
+      
+      expect(Voting::Vote.find_by(event_id: "E1", user_id: "U1").vote_type).to eq("downvote")
+    end
+  end
+
   describe "remove_vote" do
     it "removes existing vote" do
       service.cast_vote(Voting::Commands::CastVote.new(event_id: "E1", user_id: "U1", vote_type: "upvote"))

@@ -12,7 +12,7 @@ class VotesController < ApplicationController
     command_bus.call(command)
 
     redirect_to root_path, notice: "Vote cast successfully."
-  rescue ActiveModel::ValidationError
+  rescue ActiveModel::ValidationError, Voting::EventNotFoundError
     redirect_to root_path, alert: "Invalid vote parameters."
   end
 
@@ -24,7 +24,7 @@ class VotesController < ApplicationController
     command_bus.call(command)
 
     redirect_to root_path, notice: "Vote removed."
-  rescue ActiveModel::ValidationError
+  rescue ActiveModel::ValidationError, Voting::EventNotFoundError
     redirect_to root_path, alert: "Invalid vote parameters."
   end
 

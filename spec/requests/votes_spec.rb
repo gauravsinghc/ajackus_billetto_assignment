@@ -52,10 +52,20 @@ RSpec.describe "Votes Security", type: :request do
     end
   end
 
-    describe "Concurrent Double Clicks" do
-    it "gracefully handles ActiveRecord::RecordNotUnique without crashing" do
+  describe "Concurrent Double Clicks" do
+    it "gracefully handles ActiveRecord::RecordNotUnique via bounded retry without crashing" do
       cookies[:test_user_id] = "system_test_user"
-      allow_any_instance_of(Voting::Vote).to receive(:save!).and_raise(ActiveRecord::RecordNotUnique)
+      
+      call_count = 0
+      allow_any_instance_of(Voting::Vote).to receive(:save!) do |vote|
+        if call_count == 0
+          call_count += 1
+          raise ActiveRecord::RecordNotUnique
+        else
+          # Let it pass on the second attempt (retry)
+          true
+        end
+      end
 
       post event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "upvote" }
 
