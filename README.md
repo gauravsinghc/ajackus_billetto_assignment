@@ -121,7 +121,13 @@ Configured the foundation: Sidekiq for background jobs, Rails Event Store for ev
 Built the `Billetto::Client` using Faraday, wrapped it in a `Stoplight` circuit breaker for resilience, and created the `Billetto::EventData` Anti-Corruption Layer. Implemented the `Events::Importer` to safely and idempotently synchronize API payloads with the local `Event` database table.
 
 **Phase 6: Background Orchestration**
-Created `BillettoIngestionJob` to automatically poll the public API in the background. Because the Billetto API lacks explicit pagination arguments, we rely on bounded requests (`limit=100`) to ingest the most relevant events.
+Created `BillettoIngestionJob` to automatically poll the public API in the background. We also added a custom rake task (`bundle exec rails billetto:import`) to allow manual triggering of the initial event import.
+
+For the initial synchronization, the documented `GET /public/events` endpoint supports a maximum `limit` of 100. Its documented query parameters do not include page, offset, cursor, or other continuation parameters, and the documented top-level response does not expose a continuation mechanism. Therefore, for this assignment, the importer uses `limit=100` as the maximum documented result scope.
+
+For ongoing synchronization, Billetto provides webhook notifications for event lifecycle changes such as event creation, updates, publishing, and other supported event changes. A production implementation would configure Billetto webhooks to send these changes to the application, process the webhook requests asynchronously through Sidekiq, and retain the raw webhook payload for auditability. This provides incremental synchronization without relying solely on repeated full imports.
+
+Note: The Billetto webhook integration is not currently registered/configured in this repository; it is documented here as the production synchronization architecture. The current implementation uses the background ingestion job for the assignment.
 
 **Phase 7: Authentication**
 Integrated Clerk. The application uses Clerk's Ruby middleware to protect the voting endpoints and extract securely verified user IDs.
@@ -173,7 +179,7 @@ Below are the items requested during the initial review, along with the exact so
 - **Resolution**: Completely updated `.github/workflows/ci.yml` to execute `bundle exec rspec` for both unit and system tests. Securely injected dummy Clerk environment variables into the test runner to prevent unhandled authorization crashes during the build.
 
 **10. Import more than the first 100 events, or explain in the README why 100 is sufficient.**
-- **Resolution**: The Billetto `GET /public/events` endpoint restricts responses to a maximum `limit` of 100 and completely lacks documented continuation mechanisms (page, offset, cursors, etc.). Therefore, a bounded request of `limit=100` is the maximum safe scope for this assignment. In a true production architecture, rather than paginating the public API, we would use a nightly cronjob (as implemented now) paired with webhooks. We would utilize Billetto's webhook functionality, which provides real-time event updates (created, updated, published, deleted, etc.) to keep the local database synchronized.
+- **Resolution**: The documented `GET /public/events` endpoint supports a maximum `limit` of 100. Its documented query parameters do not include page, offset, cursor, or other continuation parameters, and the documented top-level response does not expose a continuation mechanism. Therefore, for this assignment, the importer uses `limit=100` as the maximum documented result scope. For a production-scale synchronization strategy, the application would require a verified continuation mechanism or another supported synchronization mechanism. Periodic reconciliation and/or officially supported webhook-based updates could be considered if available for this resource.
 
 **11. Change logout from a plain link to a button that uses a DELETE request.**
 - **Resolution**: Updated the router to map the logout path to a `DELETE` request, and replaced the `link_to` in the application header with a `button_to` form submission, resolving the security vulnerability of GET-based logouts.
