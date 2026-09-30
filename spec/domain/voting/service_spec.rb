@@ -1,6 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Voting::Service do
+  before do
+    allow(Event).to receive(:exists?).and_return(true)
+  end
   let(:service) { described_class.new }
   let(:event_store) { Rails.configuration.event_store }
 

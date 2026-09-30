@@ -7,11 +7,13 @@ class VotesController < ApplicationController
       user_id: current_user[:id],
       vote_type: params[:vote_type]
     )
+    # Note: Concurrent double-clicks (ActiveRecord::RecordNotUnique) are caught 
+    # and swallowed inside Voting::Service to ensure idempotent success here.
     command_bus.call(command)
 
-    redirect_to events_path, notice: "Vote cast successfully."
+    redirect_to root_path, notice: "Vote cast successfully."
   rescue ActiveModel::ValidationError
-    redirect_to events_path, alert: "Invalid vote parameters."
+    redirect_to root_path, alert: "Invalid vote parameters."
   end
 
   def destroy
@@ -21,9 +23,9 @@ class VotesController < ApplicationController
     )
     command_bus.call(command)
 
-    redirect_to events_path, notice: "Vote removed."
+    redirect_to root_path, notice: "Vote removed."
   rescue ActiveModel::ValidationError
-    redirect_to events_path, alert: "Invalid vote parameters."
+    redirect_to root_path, alert: "Invalid vote parameters."
   end
 
   private
