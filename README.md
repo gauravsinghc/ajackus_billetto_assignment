@@ -121,7 +121,7 @@ Configured the foundation: Sidekiq for background jobs, Rails Event Store for ev
 Built the `Billetto::Client` using Faraday, wrapped it in a `Stoplight` circuit breaker for resilience, and created the `Billetto::EventData` Anti-Corruption Layer. Implemented the `Events::Importer` to safely and idempotently synchronize API payloads with the local `Event` database table.
 
 **Phase 6: Background Orchestration**
-Created `BillettoIngestionJob` to automatically poll the public API in the background.
+Created `BillettoIngestionJob` to automatically poll the public API in the background. We also added a custom rake task (`bundle exec rails billetto:import`) to allow manual triggering of the initial event import.
 
 For the initial synchronization, the documented `GET /public/events` endpoint supports a maximum `limit` of 100. Its documented query parameters do not include page, offset, cursor, or other continuation parameters, and the documented top-level response does not expose a continuation mechanism. Therefore, for this assignment, the importer uses `limit=100` as the maximum documented result scope.
 
