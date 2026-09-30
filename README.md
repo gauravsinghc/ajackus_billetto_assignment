@@ -32,7 +32,7 @@ This project goes beyond a standard Rails MVC pattern. It is built using **CQRS 
    PGPORT=5432
    BILLETTO_API_KEYPAIR=your_billetto_api_keypair
    # Clerk Auth Keys (Required for Authentication)
-   CLERK_API_KEY=your_clerk_secret_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
    CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
    CLERK_SIGN_IN_URL=
    CLERK_SIGN_UP_URL=
@@ -41,6 +41,7 @@ This project goes beyond a standard Rails MVC pattern. It is built using **CQRS 
 3. **Database Setup**
    ```bash
    bundle exec rails db:create db:migrate
+   bundle exec rails billetto:import
    ```
 
 4. **Running the Application**
