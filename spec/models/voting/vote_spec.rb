@@ -11,9 +11,7 @@ RSpec.describe Voting::Vote, type: :model do
       }.to raise_error(ActiveRecord::RecordNotUnique)
     end
 
-    it "prevents race conditions via true threaded concurrency", skip_transaction: true do
-      # Disabling transactional fixtures for this test specifically (if needed) or relying on raw connections
-      # Using Threads to attempt concurrent inserts
+    it "prevents race conditions via true threaded concurrency" do
       
       threads = []
       

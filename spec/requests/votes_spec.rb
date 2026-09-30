@@ -15,7 +15,7 @@ RSpec.describe "Votes Security", type: :request do
     it "rejects votes for fake event IDs gracefully" do
       cookies[:test_user_id] = "system_test_user"
       post event_vote_path(event_id: "totally-fake-event"), params: { vote_type: "upvote" }
-      expect(response).to redirect_to(events_path)
+      expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to eq("Invalid vote parameters.")
     end
   end
@@ -59,7 +59,7 @@ RSpec.describe "Votes Security", type: :request do
 
       post event_vote_path(event_id: event.billetto_event_id), params: { vote_type: "upvote" }
 
-      expect(response).to redirect_to(events_path)
+      expect(response).to redirect_to(root_path)
       expect(flash[:notice]).to eq("Vote cast successfully.")
     end
   end

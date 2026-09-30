@@ -19,7 +19,9 @@ module Events
 
       if event.changed?
         event.last_seen_at = Time.current
-        event.save 
+        unless event.save
+          Rails.logger.warn("Skipped invalid event #{event.billetto_event_id}: #{event.errors.full_messages.join(', ')}")
+        end
       else
         event.update_column(:last_seen_at, Time.current) unless event.new_record?
       end
