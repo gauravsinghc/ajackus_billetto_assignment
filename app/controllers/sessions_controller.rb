@@ -12,6 +12,8 @@ class SessionsController < ApplicationController
 
     cookies.delete(:__session)
     cookies.delete(:__client_uat)
+
+    cookies.delete(:test_user_id) if Rails.env.test?
     
     redirect_to root_path
   end
