@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.4"
 # Event-driven persistence and dispatch
-gem "rails_event_store", "~> 3.1"
+gem "rails_event_store", "~> 3.2"
 # HTTP client for external APIs
 gem "faraday", "~> 2.0"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
