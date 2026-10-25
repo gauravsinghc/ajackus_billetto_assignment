@@ -5,7 +5,7 @@ gem "rails", "~> 8.1.4"
 # Event-driven persistence and dispatch
 gem "rails_event_store", "~> 3.1"
 # HTTP client for external APIs
-gem "faraday", "~> 2.0"
+gem "faraday", "~> 2.15"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
